@@ -1,0 +1,16 @@
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore Mac OSX temp files
+.DS_Store
+._.DS_Store
+._*
+
+# sub git repo
+*/.git
