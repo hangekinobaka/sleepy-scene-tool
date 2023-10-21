@@ -29,6 +29,8 @@ namespace SleepySceneManagement
 {
     public class SceneSelectorWindow : EditorWindow
     {
+        const int CANCEL_SCENE_HOVER_COUNTER = 3;
+
         /** For foldable scene list display **/
         private List<string> _sceneList = new List<string>();
         private List<string> _buildsceneList = new List<string>();
@@ -39,10 +41,12 @@ namespace SleepySceneManagement
         /** For select main entrance scene **/
         private string _entranceScenePath;
 
-        /** Window UI only **/
+        /** For GUI only **/
         private Vector2 _scrollPosition;
         private bool _tipsShow = true;
         private bool _filterShow = true;
+        private string _hoveredScenePath;
+        private int _cancelSceneHoverCounter = CANCEL_SCENE_HOVER_COUNTER;
 
         /** Cache **/
         static SceneCache _sceneCache;
@@ -161,29 +165,29 @@ namespace SleepySceneManagement
             return _fullSceneList;
         }
 
-        #region GUI
         private void OnGUI()
         {
-            /** How to use tips **/
+            #region How to use tips
             _tipsShow = EditorGUILayout.Foldout(_tipsShow, "How to use");
 
             if (_tipsShow)
             {
                 GUILayout.BeginVertical("box");
 
-                GUIStyle wordWrapStyle = new GUIStyle(EditorStyles.label);
+                GUIStyle wordWrapStyle = new GUIStyle(EditorStyles.boldLabel);
                 wordWrapStyle.wordWrap = true;
 
-                EditorGUILayout.LabelField("\u2610: Tick to mark the entry scene.", wordWrapStyle);
+                EditorGUILayout.LabelField("Click the scene name to mark it as the entrance.", wordWrapStyle);
+                EditorGUILayout.Space();
                 EditorGUILayout.LabelField("O: Open Scene", wordWrapStyle);
                 EditorGUILayout.LabelField("+: Open Scene Additively", wordWrapStyle);
 
-                EditorGUILayout.Space();
                 GUILayout.EndVertical();
             }
             EditorGUILayout.Space();
+            #endregion
 
-            /** Scene Selection Filter **/
+            #region Scene Selection Filter
             _filterShow = EditorGUILayout.Foldout(_filterShow, "Scene Filter");
 
             if (_filterShow)
@@ -214,18 +218,19 @@ namespace SleepySceneManagement
                 GUILayout.EndVertical();
             }
             EditorGUILayout.Space();
+            #endregion
 
-            /** Scene list **/
+            #region Scene list
+            // Title
             EditorGUILayout.LabelField("Scene List:", EditorStyles.boldLabel);  // Bold title
-            // Create a style for red text
-            GUIStyle redTextStyle = new GUIStyle(GUI.skin.label);
-            redTextStyle.normal.textColor = Color.red;
-
-            // Create a custom style for text with overflow clipping 
-            GUIStyle textStyle = new GUIStyle(GUI.skin.label);
 
             // Create a scroll view for the scene list
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
+
+            // Create scene name GUIStyle
+            GUIStyle sceneNameStyle = new GUIStyle(EditorStyles.toolbarButton);
+            sceneNameStyle.alignment = TextAnchor.MiddleLeft;  // Set text alignment to left
+            sceneNameStyle.richText = true;
 
             foreach (var folderPath in _sceneDict.Keys)
             {
@@ -238,31 +243,51 @@ namespace SleepySceneManagement
 
                 if (_foldoutDict[folderPath])
                 {
+                    EditorGUILayout.BeginVertical("box");
+
+                    Color originalColor = GUI.backgroundColor;
                     foreach (var scenePath in _sceneDict[folderPath])
                     {
-                        EditorGUILayout.BeginHorizontal();
-
-                        // Is Entrance checkbox
-                        bool isEntrance = _entranceScenePath == scenePath;
-                        bool newIsEntrance = GUILayout.Toggle(isEntrance, "");
-                        if (newIsEntrance != isEntrance)
+                        Rect sceneRect = EditorGUILayout.BeginHorizontal();
+                        // Highlight row selection 
+                        if (_hoveredScenePath == scenePath)
                         {
-                            _entranceScenePath = newIsEntrance ? scenePath : "";
+                            GUI.backgroundColor = Color.cyan;  // Change background color for selected scene
+
+                            if (!sceneRect.Contains(Event.current.mousePosition))
+                            {
+                                // Hack: it seems that unity's gui mouse event detection is very unstable. So I give it a buffer. 
+                                _cancelSceneHoverCounter--;
+                                if (_cancelSceneHoverCounter <= 0)
+                                {
+                                    _cancelSceneHoverCounter = CANCEL_SCENE_HOVER_COUNTER;
+
+                                    _hoveredScenePath = "";  // Update selected scene when line is being hovered
+                                    Repaint();  // Request the window to be repainted
+                                }
+                            }
+                        }
+                        else if (sceneRect.Contains(Event.current.mousePosition))
+                        {
+                            _hoveredScenePath = scenePath;  // Update selected scene when line is being hovered
+                            Repaint();  // Request the window to be repainted
+                        }
+
+                        // Scene name and Entrance Selection
+                        bool isEntrance = _entranceScenePath == scenePath;
+                        string fileName = Path.GetFileName(scenePath);
+                        if (GUILayout.Button(fileName +
+                            (isEntrance ? "    <color=red>entrance</color>" : ""),
+                            sceneNameStyle, GUILayout.ExpandWidth(true)))
+                        {
+                            _entranceScenePath = scenePath;
+
+                            // Save the selection to cache
                             if (_sceneCache == null) _sceneCache = SceneCache.GetSceneCache();
                             _sceneCache.EntranceScenePath = _entranceScenePath;
                             EditorUtility.SetDirty(_sceneCache);  // Mark the object as dirty
                             AssetDatabase.SaveAssets();  // Save all modified assets
                         }
-
-                        // Scene name
-                        string fileName = System.IO.Path.GetFileName(scenePath);
-                        GUILayout.Label(fileName, textStyle, GUILayout.ExpandWidth(true));
-                        if (isEntrance)
-                        {
-                            GUILayout.Label("entrance", redTextStyle);
-                        }
-
-                        GUILayout.FlexibleSpace();  // Pushes the following buttons to the right
 
                         // Buttons for opening the scene
                         if (GUILayout.Button("O", GUILayout.Width(30), GUILayout.Height(20)))
@@ -275,14 +300,18 @@ namespace SleepySceneManagement
                         }
 
                         EditorGUILayout.EndHorizontal();
+
+                        // Highlight row selection ends here
+                        GUI.backgroundColor = originalColor;  // Restore original background color
                     }
+
+                    EditorGUILayout.EndVertical();
                 }
             }
 
             EditorGUILayout.EndScrollView();
-
+            #endregion
         }
-        #endregion
     }
 }
 #endif
