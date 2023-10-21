@@ -18,15 +18,21 @@
 
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace SleepySceneManagement
 {
     public class SceneSelectorWindow : EditorWindow
     {
         /** For foldable scene list display **/
+        private List<string> _sceneList = new List<string>();
+        private List<string> _buildsceneList = new List<string>();
+        private List<string> _fullSceneList = new List<string>();
         private Dictionary<string, List<string>> _sceneDict;
         private Dictionary<string, bool> _foldoutDict = new Dictionary<string, bool>();
 
@@ -35,9 +41,40 @@ namespace SleepySceneManagement
 
         /** Window UI only **/
         private Vector2 _scrollPosition;
+        private bool _tipsShow = true;
+        private bool _filterShow = true;
 
         /** Cache **/
         static SceneCache _sceneCache;
+
+        /** For what scenes should be included **/
+        private bool _includeBuildSettingScenesVal = true;
+        private bool _includeBuildSettingScenes
+        {
+            get { return _includeBuildSettingScenesVal; }
+            set
+            {
+                if (_includeBuildSettingScenesVal != value)
+                {
+                    _includeBuildSettingScenesVal = value;
+                    _onIncludeScenesChanged?.Invoke();
+                }
+            }
+        }
+        private bool _includeOtherScenesVal = false;
+        private bool _includeOtherScenes
+        {
+            get { return _includeOtherScenesVal; }
+            set
+            {
+                if (_includeOtherScenesVal != value)
+                {
+                    _includeOtherScenesVal = value;
+                    _onIncludeScenesChanged?.Invoke();
+                }
+            }
+        }
+        private UnityAction _onIncludeScenesChanged;
 
         [MenuItem("Sleepy Scene/Open Select Scene Window _WINDOW")]
         public static void ShowWindow()
@@ -49,45 +86,137 @@ namespace SleepySceneManagement
         {
             if (_sceneCache == null) _sceneCache = SceneCache.GetSceneCache();
 
+            // Load the saved entrance scene path
+            _entranceScenePath = _sceneCache.EntranceScenePath;
+
+            UpdateSceneList();
+            _onIncludeScenesChanged += UpdateSceneList;
+        }
+
+        private void OnDisable()
+        {
+            _onIncludeScenesChanged -= UpdateSceneList;
+        }
+
+        private void UpdateSceneList()
+        {
+            if (_includeBuildSettingScenes && _includeOtherScenes)
+            {
+                _sceneList = GetAllScenePaths();
+            }
+            else if (_includeBuildSettingScenes && !_includeOtherScenes)
+            {
+                _sceneList = GetAllBuildScenePaths();
+            }
+            else if (!_includeBuildSettingScenes && _includeOtherScenes)
+            {
+                GetAllBuildScenePaths();
+                GetAllScenePaths();
+                _sceneList = _fullSceneList.Except(_buildsceneList).ToList();
+            }
+            else
+            {
+                _sceneList.Clear();
+            }
+            // Organize scenes by path
+            _sceneDict = new Dictionary<string, List<string>>();
+            foreach (string path in _sceneList)
+            {
+                string folderPath = Path.GetDirectoryName(path);
+                if (!_sceneDict.ContainsKey(folderPath))
+                {
+                    _sceneDict[folderPath] = new List<string>();
+                }
+                _sceneDict[folderPath].Add(path);
+            }
+        }
+
+        private List<string> GetAllBuildScenePaths()
+        {
+            _buildsceneList.Clear();
             // Get all scenes from the build settings
             var scenes = EditorBuildSettings.scenes;
-            _sceneDict = new Dictionary<string, List<string>>();
 
-            // Organize scenes by full path
             foreach (var scene in scenes)
             {
                 // We make sure all the path use "/" as the separator (Especially for Windows)
-                string fullPath = System.IO.Path.GetDirectoryName(scene.path).Replace("\\", "/");
-                if (!_sceneDict.ContainsKey(fullPath))
-                {
-                    _sceneDict[fullPath] = new List<string>();
-                }
-                _sceneDict[fullPath].Add(scene.path.Replace("\\", "/"));
+                _buildsceneList.Add(scene.path.Replace("\\", "/"));
             }
 
-            // Load the saved entrance scene path
-            _entranceScenePath = _sceneCache.EntranceScenePath;
+            return _buildsceneList;
         }
 
+        private List<string> GetAllScenePaths()
+        {
+            _fullSceneList.Clear();
+            string[] allFiles = Directory.GetFiles(Application.dataPath, "*.unity", SearchOption.AllDirectories);
+
+            foreach (var file in allFiles)
+            {
+                // We make sure all the path use "/" as the separator (Especially for Windows)
+                string relativePath = "Assets" + file.Substring(Application.dataPath.Length).Replace("\\", "/");
+                _fullSceneList.Add(relativePath);
+            }
+
+            return _fullSceneList;
+        }
+
+        #region GUI
         private void OnGUI()
         {
             /** How to use tips **/
-            GUILayout.BeginVertical("box");
+            _tipsShow = EditorGUILayout.Foldout(_tipsShow, "How to use");
 
-            GUIStyle wordWrapStyle = new GUIStyle(EditorStyles.label);
-            wordWrapStyle.wordWrap = true;
+            if (_tipsShow)
+            {
+                GUILayout.BeginVertical("box");
 
-            EditorGUILayout.LabelField("How to Use:", EditorStyles.boldLabel);  // Bold title
-                                                                                // Explanation of symbols
-            EditorGUILayout.LabelField("Checkbox: Tick to mark the entry scene.", wordWrapStyle);
-            EditorGUILayout.LabelField("O: Open Scene", wordWrapStyle);
-            EditorGUILayout.LabelField("+: Open Scene Additively", wordWrapStyle);
+                GUIStyle wordWrapStyle = new GUIStyle(EditorStyles.label);
+                wordWrapStyle.wordWrap = true;
 
-            GUILayout.EndVertical();
+                EditorGUILayout.LabelField("\u2610: Tick to mark the entry scene.", wordWrapStyle);
+                EditorGUILayout.LabelField("O: Open Scene", wordWrapStyle);
+                EditorGUILayout.LabelField("+: Open Scene Additively", wordWrapStyle);
 
-            EditorGUILayout.Space();  // Add some space between tips and scenes list
+                EditorGUILayout.Space();
+                GUILayout.EndVertical();
+            }
+            EditorGUILayout.Space();
+
+            /** Scene Selection Filter **/
+            _filterShow = EditorGUILayout.Foldout(_filterShow, "Scene Filter");
+
+            if (_filterShow)
+            {
+                GUILayout.BeginVertical("box");
+
+                GUILayout.BeginHorizontal();
+                _includeBuildSettingScenes = GUILayout.Toggle(_includeBuildSettingScenes, "Build Setting");
+                _includeOtherScenes = GUILayout.Toggle(_includeOtherScenes, "Others");
+                GUILayout.EndHorizontal();
+                EditorGUILayout.Space();
+
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("All", GUILayout.Width(50), GUILayout.Height(20)))
+                {
+                    _includeBuildSettingScenes = true;
+                    _includeOtherScenes = true;
+                }
+
+                if (GUILayout.Button("None", GUILayout.Width(50), GUILayout.Height(20)))
+                {
+                    _includeBuildSettingScenes = false;
+                    _includeOtherScenes = false;
+                }
+                GUILayout.EndHorizontal();
+
+                EditorGUILayout.Space();
+                GUILayout.EndVertical();
+            }
+            EditorGUILayout.Space();
 
             /** Scene list **/
+            EditorGUILayout.LabelField("Scene List:", EditorStyles.boldLabel);  // Bold title
             // Create a style for red text
             GUIStyle redTextStyle = new GUIStyle(GUI.skin.label);
             redTextStyle.normal.textColor = Color.red;
@@ -153,6 +282,7 @@ namespace SleepySceneManagement
             EditorGUILayout.EndScrollView();
 
         }
+        #endregion
     }
 }
 #endif
