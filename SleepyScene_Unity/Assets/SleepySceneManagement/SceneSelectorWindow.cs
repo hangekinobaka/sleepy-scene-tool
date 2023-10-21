@@ -121,6 +121,8 @@ namespace SleepySceneManagement
                             _entranceScenePath = newIsEntrance ? scenePath : "";
                             if (_sceneCache == null) _sceneCache = SceneCache.GetSceneCache();
                             _sceneCache.EntranceScenePath = _entranceScenePath;
+                            EditorUtility.SetDirty(_sceneCache);  // Mark the object as dirty
+                            AssetDatabase.SaveAssets();  // Save all modified assets
                         }
 
                         // Scene name
