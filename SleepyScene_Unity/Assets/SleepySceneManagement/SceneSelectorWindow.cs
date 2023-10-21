@@ -126,7 +126,8 @@ namespace SleepySceneManagement
             _sceneDict = new Dictionary<string, List<string>>();
             foreach (string path in _sceneList)
             {
-                string folderPath = Path.GetDirectoryName(path);
+                // We make sure all the path use "/" as the separator (Especially for Windows)
+                string folderPath = Path.GetDirectoryName(path).Replace("\\", "/");
                 if (!_sceneDict.ContainsKey(folderPath))
                 {
                     _sceneDict[folderPath] = new List<string>();
