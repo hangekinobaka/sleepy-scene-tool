@@ -30,7 +30,7 @@ namespace SleepySceneManagement
         const string DEFAULT_ENTRANCE_SCENE = "Assets/Scenes/Main.unity"; // Default entrance scene
 
         public List<string> EditingScenesPathsCache = new List<string>();
-        public string EntranceScenePath;
+        public string EntranceScenePath = DEFAULT_ENTRANCE_SCENE;
 
         static SceneCache _sceneCache;
 
