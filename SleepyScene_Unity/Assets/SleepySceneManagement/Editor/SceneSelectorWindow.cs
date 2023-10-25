@@ -24,6 +24,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace SleepySceneManagement
 {
@@ -40,6 +41,9 @@ namespace SleepySceneManagement
 
         /** For select main entrance scene **/
         private string _entranceScenePath;
+
+        /** For display which scene is under editing **/
+        private HashSet<string> editingSceneList = new HashSet<string>();
 
         /** For GUI only **/
         private Vector2 _scrollPosition;
@@ -94,14 +98,39 @@ namespace SleepySceneManagement
             _entranceScenePath = _sceneCache.EntranceScenePath;
 
             UpdateSceneList();
+            UpdatEditingSceneList();
+
             _onIncludeScenesChanged += UpdateSceneList;
+            EditorSceneManager.sceneOpened += OnSceneLoaded;
         }
 
         private void OnDisable()
         {
             _onIncludeScenesChanged -= UpdateSceneList;
+            EditorSceneManager.sceneOpened -= OnSceneLoaded;
         }
 
+        #region Get editing scene list methods
+        public void OnSceneLoaded(Scene scene, OpenSceneMode mode)
+        {
+            // The editing scene are changed
+            UpdatEditingSceneList();
+        }
+
+        private void UpdatEditingSceneList()
+        {
+            editingSceneList.Clear();
+            int countLoaded = SceneManager.sceneCount;
+
+            for (int i = 0; i < countLoaded; i++)
+            {
+                string path = SceneManager.GetSceneAt(i).path.Replace("\\", "/");
+                editingSceneList.Add(path);
+            }
+        }
+        #endregion
+
+        #region Get all scene list methods
         private void UpdateSceneList()
         {
             if (_includeBuildSettingScenes && _includeOtherScenes)
@@ -165,6 +194,7 @@ namespace SleepySceneManagement
 
             return _fullSceneList;
         }
+        #endregion
 
         private void OnGUI()
         {
@@ -182,6 +212,7 @@ namespace SleepySceneManagement
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("O: Open Scene", wordWrapStyle);
                 EditorGUILayout.LabelField("+: Open Scene Additively", wordWrapStyle);
+                EditorGUILayout.LabelField("Note: \u2192 Tells you which scene is under editing", wordWrapStyle);
 
                 GUILayout.EndVertical();
             }
@@ -274,10 +305,12 @@ namespace SleepySceneManagement
                             Repaint();  // Request the window to be repainted
                         }
 
-                        // Scene name and Entrance Selection
+                        // Scene name and Entrance Selection and Editing Scene display
                         bool isEntrance = _entranceScenePath == scenePath;
                         string fileName = Path.GetFileName(scenePath);
-                        if (GUILayout.Button(fileName +
+                        if (GUILayout.Button(
+                            (editingSceneList.Contains(scenePath) ? "\u2192 " : "\u00A0\u00A0\u00A0\u00A0") +
+                            fileName +
                             (isEntrance ? "    <color=red>entrance</color>" : ""),
                             sceneNameStyle, GUILayout.ExpandWidth(true)))
                         {
