@@ -32,6 +32,10 @@ namespace SleepySceneManagement
     {
         const int CANCEL_SCENE_HOVER_COUNTER = 3;
 
+        /** Textures **/
+        private Texture2D _playIcon;
+        private Texture2D _stopIcon;
+
         /** For foldable scene list display **/
         private List<string> _sceneList = new List<string>();
         private List<string> _buildsceneList = new List<string>();
@@ -47,7 +51,7 @@ namespace SleepySceneManagement
 
         /** For GUI only **/
         private Vector2 _scrollPosition;
-        private bool _tipsShow = true;
+        private bool _tipsShow = false;
         private bool _filterShow = true;
         private string _hoveredScenePath;
         private int _cancelSceneHoverCounter = CANCEL_SCENE_HOVER_COUNTER;
@@ -88,6 +92,12 @@ namespace SleepySceneManagement
         public static void ShowWindow()
         {
             GetWindow<SceneSelectorWindow>("Select Scene");
+        }
+
+        private void Awake()
+        {
+            _playIcon = CommonUtil.LoadPlayIcon();
+            _stopIcon = CommonUtil.LoadStopIcon();
         }
 
         private void OnEnable()
@@ -198,6 +208,39 @@ namespace SleepySceneManagement
 
         private void OnGUI()
         {
+            #region Control panel
+            GUILayout.BeginVertical("Box");
+
+            // Title
+            EditorGUILayout.LabelField("Control panel:", EditorStyles.boldLabel);  // Bold title
+            EditorGUILayout.Space();
+
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();  // Add flexible space on the left
+
+            // Show play button only when the app is not playing, otherwise show stop btton only.
+            if (EditorApplication.isPlaying)
+            {
+                if (GUILayout.Button(new GUIContent(_stopIcon, "Stop And Resume Editing Scene(s)"), GUILayout.Width(50), GUILayout.Height(30)))
+                {
+                    ScenePlayUtil.StopAndResume();
+                }
+            }
+            else
+            {
+                if (GUILayout.Button(new GUIContent(_playIcon, "Play From Entrance Scene"), GUILayout.Width(50), GUILayout.Height(30)))
+                {
+                    ScenePlayUtil.PlayFromEntrance();
+                }
+            }
+
+            GUILayout.FlexibleSpace();  // Add flexible space on the right
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space();
+            GUILayout.EndVertical();
+            #endregion
+
             #region How to use tips
             _tipsShow = EditorGUILayout.Foldout(_tipsShow, "How to use");
 

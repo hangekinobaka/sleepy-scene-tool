@@ -40,13 +40,18 @@ namespace SleepySceneManagement
             GetSceneCache();
         }
 
+        public static string GetDirectoryPath()
+        {
+            // Get our current path
+            string scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(ScriptableObject.CreateInstance<SceneCache>()));
+            return Path.GetDirectoryName(scriptPath);
+        }
+
         public static SceneCache GetSceneCache()
         {
             if (_sceneCache != null) return _sceneCache;
 
-            // Get the path of ScenePlayUtil script
-            string scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(ScriptableObject.CreateInstance<SceneCache>()));
-            string directoryPath = Path.GetDirectoryName(scriptPath);
+            string directoryPath = GetDirectoryPath();
 
             // Construct the path for SceneCache asset
             string assetPath = Path.Combine(directoryPath, SCENE_CACHE_ASSET_PATH);
