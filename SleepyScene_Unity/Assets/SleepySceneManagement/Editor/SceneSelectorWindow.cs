@@ -274,7 +274,9 @@ namespace SleepySceneManagement
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("O: Open Scene", wordWrapStyle);
                 EditorGUILayout.LabelField("+: Open Scene Additively", wordWrapStyle);
-                EditorGUILayout.LabelField("Note: \u2192 Tells you which scene is under editing", wordWrapStyle);
+                EditorGUILayout.LabelField("-: Remove Scene", wordWrapStyle);
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("\u2192 at the beginning of each row tells you which scene is under editing", wordWrapStyle);
 
                 GUILayout.EndVertical();
             }
@@ -322,7 +324,7 @@ namespace SleepySceneManagement
             // Refresh button
             GUILayout.Space(10f);
             GUI.backgroundColor = Color.green;
-            if (GUILayout.Button(new GUIContent("\u21BB", "Refresh the scene list"), GUILayout.Width(30), GUILayout.Height(20)))
+            if (GUILayout.Button(new GUIContent("\u21BB", "Refresh the scene list"), GUILayout.Width(22), GUILayout.Height(20)))
             {
                 UpdateSceneList();
             }
@@ -398,14 +400,23 @@ namespace SleepySceneManagement
                         }
 
                         // Buttons for opening the scene
-                        if (GUILayout.Button("O", GUILayout.Width(30), GUILayout.Height(20)))
+                        if (GUILayout.Button("O", GUILayout.Width(22), GUILayout.Height(20)))
                         {
                             EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                         }
-                        if (GUILayout.Button("+", GUILayout.Width(30), GUILayout.Height(20)))
+                        if (GUILayout.Button("+", GUILayout.Width(22), GUILayout.Height(20)))
                         {
                             EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
                         }
+                        GUI.enabled = _editingSceneList.Count > 1 && _editingSceneList.Contains(scenePath);
+                        // - will only be enabled when
+                        // 1. it is being edting
+                        // 2. thi is not the last scene editing
+                        if (GUILayout.Button("-", GUILayout.Width(22), GUILayout.Height(20)))
+                        {
+                            EditorSceneManager.CloseScene(EditorSceneManager.GetSceneByPath(scenePath), true);
+                        }
+                        GUI.enabled = true;
 
                         EditorGUILayout.EndHorizontal();
 
