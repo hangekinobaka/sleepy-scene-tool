@@ -20,6 +20,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -47,7 +48,7 @@ namespace SleepySceneManagement
         private string _entranceScenePath;
 
         /** For display which scene is under editing **/
-        private HashSet<string> editingSceneList = new HashSet<string>();
+        private HashSet<string> _editingSceneList = new HashSet<string>();
 
         /** For GUI only **/
         private Vector2 _scrollPosition;
@@ -111,17 +112,28 @@ namespace SleepySceneManagement
             UpdatEditingSceneList();
 
             _onIncludeScenesChanged += UpdateSceneList;
-            EditorSceneManager.sceneOpened += OnSceneLoaded;
+            EditorSceneManager.sceneOpened += OnSceneAdded;
+            EditorSceneManager.sceneClosed += OnSceneRemoved;
         }
 
         private void OnDisable()
         {
             _onIncludeScenesChanged -= UpdateSceneList;
-            EditorSceneManager.sceneOpened -= OnSceneLoaded;
+            EditorSceneManager.sceneOpened -= OnSceneAdded;
+            EditorSceneManager.sceneClosed -= OnSceneRemoved;
         }
 
-        #region Get editing scene list methods
-        public void OnSceneLoaded(Scene scene, OpenSceneMode mode)
+        #region Get editing scene list methods  
+        public async void OnSceneRemoved(Scene scene)
+        {
+            // Apparently when this handler is called, the scene is not actually removed.
+            // So we wait for a while to get the new list.
+            await Task.Delay(10);
+            // The editing scene are changed
+            UpdatEditingSceneList();
+        }
+
+        public void OnSceneAdded(Scene scene, OpenSceneMode mode)
         {
             // The editing scene are changed
             UpdatEditingSceneList();
@@ -129,14 +141,16 @@ namespace SleepySceneManagement
 
         private void UpdatEditingSceneList()
         {
-            editingSceneList.Clear();
+            _editingSceneList.Clear();
             int countLoaded = SceneManager.sceneCount;
 
             for (int i = 0; i < countLoaded; i++)
             {
                 string path = SceneManager.GetSceneAt(i).path.Replace("\\", "/");
-                editingSceneList.Add(path);
+                _editingSceneList.Add(path);
             }
+
+            Repaint();  // Request the window to be repainted
         }
         #endregion
 
@@ -352,7 +366,7 @@ namespace SleepySceneManagement
                         bool isEntrance = _entranceScenePath == scenePath;
                         string fileName = Path.GetFileName(scenePath);
                         if (GUILayout.Button(
-                            (editingSceneList.Contains(scenePath) ? "\u2192 " : "\u00A0\u00A0\u00A0\u00A0") +
+                            (_editingSceneList.Contains(scenePath) ? "\u2192 " : "\u00A0\u00A0\u00A0\u00A0") +
                             fileName +
                             (isEntrance ? "    <color=red>entrance</color>" : ""),
                             sceneNameStyle, GUILayout.ExpandWidth(true)))
