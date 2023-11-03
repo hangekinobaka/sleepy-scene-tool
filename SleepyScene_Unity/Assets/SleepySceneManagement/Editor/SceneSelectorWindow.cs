@@ -187,6 +187,8 @@ namespace SleepySceneManagement
                 }
                 _sceneDict[folderPath].Add(path);
             }
+
+            Repaint();  // Request the window to be repainted
         }
 
         private List<string> GetAllBuildScenePaths()
@@ -222,6 +224,9 @@ namespace SleepySceneManagement
 
         private void OnGUI()
         {
+            // Default vars
+            Color originalColor = GUI.backgroundColor;
+
             #region Control panel
             GUILayout.BeginVertical("Box");
 
@@ -310,8 +315,21 @@ namespace SleepySceneManagement
             #endregion
 
             #region Scene list
+            GUILayout.BeginHorizontal();
             // Title
-            EditorGUILayout.LabelField("Scene List:", EditorStyles.boldLabel);  // Bold title
+            GUILayout.Label("Scene List:", EditorStyles.boldLabel, GUILayout.ExpandWidth(false));  // Bold title
+
+            // Refresh button
+            GUILayout.Space(10f);
+            GUI.backgroundColor = Color.green;
+            if (GUILayout.Button(new GUIContent("\u21BB", "Refresh the scene list"), GUILayout.Width(30), GUILayout.Height(20)))
+            {
+                UpdateSceneList();
+            }
+            GUI.backgroundColor = originalColor;  // Restore the original color
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
 
             // Create a scroll view for the scene list
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition);
@@ -334,7 +352,6 @@ namespace SleepySceneManagement
                 {
                     EditorGUILayout.BeginVertical("box");
 
-                    Color originalColor = GUI.backgroundColor;
                     foreach (var scenePath in _sceneDict[folderPath])
                     {
                         Rect sceneRect = EditorGUILayout.BeginHorizontal();
