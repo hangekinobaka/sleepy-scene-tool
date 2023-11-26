@@ -33,6 +33,8 @@ namespace Sleepy.SceneManagement
         [MenuItem("Sleepy/SceneManagement/\u25B6 Play From Entrance Scene")]
         public static void PlayFromEntrance()
         {
+            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
+
             if (_sceneCache == null) _sceneCache = SceneCache.GetSceneCache();
 
             // Get entranceScenePath from the scene cache
