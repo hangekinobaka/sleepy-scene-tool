@@ -30,7 +30,7 @@ namespace Sleepy.SceneManagement
 
         static SceneCache _sceneCache;
 
-        [MenuItem("Sleepy Scene/\u25B6 Play From Entrance Scene")]
+        [MenuItem("Sleepy/SceneManagement/\u25B6 Play From Entrance Scene")]
         public static void PlayFromEntrance()
         {
             if (_sceneCache == null) _sceneCache = SceneCache.GetSceneCache();
@@ -64,7 +64,7 @@ namespace Sleepy.SceneManagement
             EditorApplication.isPlaying = true;
         }
 
-        [MenuItem("Sleepy Scene/\u23F9 Stop And Resume Editing Scene(s)")]
+        [MenuItem("Sleepy/SceneManagement/\u23F9 Stop And Resume Editing Scene(s)")]
         public static void StopAndResume()
         {
             EditorApplication.isPlaying = false;

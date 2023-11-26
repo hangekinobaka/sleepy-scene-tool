@@ -89,7 +89,7 @@ namespace Sleepy.SceneManagement
         }
         private UnityAction _onIncludeScenesChanged;
 
-        [MenuItem("Sleepy Scene/Open Select Scene Window _WINDOW")]
+        [MenuItem("Sleepy/SceneManagement/Open Select Scene Window _WINDOW")]
         public static void ShowWindow()
         {
             GetWindow<SceneSelectorWindow>("Select Scene");
