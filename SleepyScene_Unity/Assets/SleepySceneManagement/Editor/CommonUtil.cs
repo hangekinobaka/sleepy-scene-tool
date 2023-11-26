@@ -20,7 +20,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace SleepySceneManagement
+namespace Sleepy.SceneManagement
 {
     public static class CommonUtil
     {

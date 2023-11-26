@@ -23,7 +23,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace SleepySceneManagement
+namespace Sleepy.SceneManagement
 {
     public class ScenePlayUtil : ScriptableObject
     {// The clase extends ScriptableObject for getting current file's path.

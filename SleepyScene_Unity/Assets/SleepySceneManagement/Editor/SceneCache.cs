@@ -22,7 +22,7 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 
-namespace SleepySceneManagement
+namespace Sleepy.SceneManagement
 {
     public class SceneCache : ScriptableObject
     {

@@ -27,7 +27,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
-namespace SleepySceneManagement
+namespace Sleepy.SceneManagement
 {
     public class SceneSelectorWindow : EditorWindow
     {
