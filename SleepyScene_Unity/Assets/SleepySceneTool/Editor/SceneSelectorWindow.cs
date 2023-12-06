@@ -1,21 +1,3 @@
-/*
- * Sleepy Scene Management
- * Copyright (c) 2023 He Yiran
- * 
- * This file is part of the Sleepy Scene Management software, 
- * which is licensed under the terms and conditions of the custom license 
- * provided with the software package.
- * 
- * You may use, modify, and keep this software as long as you comply 
- * with the license terms. The full license can be found in the LICENSE file 
- * included with this software or can be obtained by contacting the author.
- * 
- * Any modification to the software is done at your own risk. The author 
- * is not responsible for any issues arising from modifications to the software.
- * 
- * For any issues with the unmodified software, please contact the author.
- */
-
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using System.IO;
@@ -27,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
-namespace Sleepy.SceneManagement
+namespace Sleepy.SceneTool
 {
     public class SceneSelectorWindow : EditorWindow
     {
@@ -89,7 +71,7 @@ namespace Sleepy.SceneManagement
         }
         private UnityAction _onIncludeScenesChanged;
 
-        [MenuItem("Sleepy/SceneManagement/Open Select Scene Window _WINDOW")]
+        [MenuItem("Sleepy/SceneTool/Open Select Scene Window _WINDOW")]
         public static void ShowWindow()
         {
             GetWindow<SceneSelectorWindow>("Select Scene");

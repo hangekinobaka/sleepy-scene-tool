@@ -1,21 +1,3 @@
-/*
- * Sleepy Scene Management
- * Copyright (c) 2023 He Yiran
- * 
- * This file is part of the Sleepy Scene Management software, 
- * which is licensed under the terms and conditions of the custom license 
- * provided with the software package.
- * 
- * You may use, modify, and keep this software as long as you comply 
- * with the license terms. The full license can be found in the LICENSE file 
- * included with this software or can be obtained by contacting the author.
- * 
- * Any modification to the software is done at your own risk. The author 
- * is not responsible for any issues arising from modifications to the software.
- * 
- * For any issues with the unmodified software, please contact the author.
- */
-
 #if UNITY_EDITOR
 using System;
 using UnityEditor;
@@ -23,14 +5,14 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Sleepy.SceneManagement
+namespace Sleepy.SceneTool
 {
     public class ScenePlayUtil : ScriptableObject
     {// The clase extends ScriptableObject for getting current file's path.
 
         static SceneCache _sceneCache;
 
-        [MenuItem("Sleepy/SceneManagement/\u25B6 Play From Entrance Scene")]
+        [MenuItem("Sleepy/SceneTool/\u25B6 Play From Entrance Scene")]
         public static void PlayFromEntrance()
         {
             EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
@@ -66,7 +48,7 @@ namespace Sleepy.SceneManagement
             EditorApplication.isPlaying = true;
         }
 
-        [MenuItem("Sleepy/SceneManagement/\u23F9 Stop And Resume Editing Scene(s)")]
+        [MenuItem("Sleepy/SceneTool/\u23F9 Stop And Resume Editing Scene(s)")]
         public static void StopAndResume()
         {
             EditorApplication.isPlaying = false;
