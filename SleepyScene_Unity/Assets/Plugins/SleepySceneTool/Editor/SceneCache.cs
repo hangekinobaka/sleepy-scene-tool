@@ -8,7 +8,8 @@ namespace Sleepy.SceneTool
 {
     public class SceneCache : ScriptableObject
     {
-        const string SCENE_CACHE_ASSET_PATH = "SceneCache.asset";
+        const string SCENE_CACHE_ASSET_DIR = "Plugins/SleepySceneTool/Editor";
+        const string SCENE_CACHE_ASSET_PATH = "Assets/" + SCENE_CACHE_ASSET_DIR + "/SceneCache.asset";
         const string DEFAULT_ENTRANCE_SCENE = "Assets/Scenes/Main.unity"; // Default entrance scene
 
         public List<string> EditingScenesPathsCache = new List<string>();
@@ -33,15 +34,18 @@ namespace Sleepy.SceneTool
         {
             if (_sceneCache != null) return _sceneCache;
 
-            string directoryPath = GetDirectoryPath();
-
-            // Construct the path for SceneCache asset
-            string assetPath = Path.Combine(directoryPath, SCENE_CACHE_ASSET_PATH);
+            string assetPath = SCENE_CACHE_ASSET_PATH;
 
             // Load the ScriptableObject, or create a new one if it doesn't exist
             _sceneCache = AssetDatabase.LoadAssetAtPath<SceneCache>(assetPath);
             if (_sceneCache == null)
             {
+                string dirPath = Path.Combine(Application.dataPath, SCENE_CACHE_ASSET_DIR);
+                if (!Directory.Exists(dirPath))
+                {
+                    Directory.CreateDirectory(dirPath);
+                }
+
                 _sceneCache = ScriptableObject.CreateInstance<SceneCache>();
                 AssetDatabase.CreateAsset(_sceneCache, assetPath);
                 CommonUtil.SleepySceneDebugLog($"A SceneCache Object is created in path: {assetPath}");
