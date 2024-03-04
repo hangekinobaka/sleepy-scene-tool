@@ -31,7 +31,12 @@ scene, no matter which scene(s) you are currently editing.
 - **Seamless Stop and Resume:**    
 Another menu option to stop the running project and swiftly
 resume editing the previously open scene(s).
-Usage
+
+## Installation
+To add `Sleepy Scene Tool` to your project follow these [instructions](https://docs.unity3d.com/Manual/upm-ui-giturl.html) using this Git URL:
+```
+https://github.com/hangekinobaka/sleepy-scene-tool.git?path=SleepyScene_Unity/Assets/Plugins/SleepySceneTool
+```
 
 ## Usage
 
