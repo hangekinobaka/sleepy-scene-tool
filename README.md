@@ -1,7 +1,7 @@
 # Sleepy Scene Tool (for Unity)
 
 Author: He Yiran (SleepyCat)         
-Version: 1.2.3      
+Version: 1.2.5      
 
 ## Description
 In many **Unity** projects, there is a designated entrance scene from which
