@@ -1,0 +1,19 @@
+{
+    "name": "com.hangekinobaka.sleepy-scene-tool",
+    "displayName": "Sleepy Scene Tool",
+    "description": "Sleepy Scene Tool",
+    "version": "1.2.5",
+    "unity": "2020.3",
+    "author": {
+      "name": "He Yiran (SleepyCat)",
+      "url": "https://github.com/hangekinobaka"
+    },
+    "keywords": [
+      "Scene"
+    ],
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/hangekinobaka/sleepy-scene-tool"
+    }
+}
