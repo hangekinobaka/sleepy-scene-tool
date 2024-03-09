@@ -33,10 +33,17 @@ Another menu option to stop the running project and swiftly
 resume editing the previously open scene(s).
 
 ## Installation
-To add `Sleepy Scene Tool` to your project follow these [instructions](https://docs.unity3d.com/Manual/upm-ui-giturl.html) using this Git URL:
-```
-https://github.com/hangekinobaka/sleepy-scene-tool.git?path=SleepyScene_Unity/Assets/Plugins/SleepySceneTool
-```
+
+- Using **UPM**    
+  We recommend you to use the Unity Pacakge Manager(UPM) for the installation.
+  To add `Sleepy Scene Tool` to your project follow these [instructions](https://docs.unity3d.com/Manual/upm-ui-giturl.html) using this Git URL:
+  ```
+  https://github.com/hangekinobaka/sleepy-scene-tool.git?path=SleepyScene_Unity/Assets/Plugins/SleepySceneTool
+  ```
+  (Special thanks to [gluks](https://github.com/gluks) for implementing the UPM download method.👍🏻)
+
+- Download the package directly    
+  You can also find the `.unitypackage` file in the [Releases page](https://github.com/hangekinobaka/sleepy-scene-tool/releases) if it is easier for you.
 
 ## Usage
 
