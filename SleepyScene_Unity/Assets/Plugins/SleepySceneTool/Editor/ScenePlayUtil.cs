@@ -15,37 +15,39 @@ namespace Sleepy.SceneTool
         [MenuItem("Sleepy/SceneTool/\u25B6 Play From Entrance Scene")]
         public static void PlayFromEntrance()
         {
-            EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo();
-
-            if (_sceneCache == null) _sceneCache = SceneCache.GetSceneCache();
-
-            // Get entranceScenePath from the scene cache
-            string entranceScenePath = _sceneCache.EntranceScenePath;
-
-            if (string.IsNullOrEmpty(entranceScenePath) || !System.IO.File.Exists(entranceScenePath))
+            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
             {
-                CommonUtil.SleepySceneDebugError($"Your entrance scene {entranceScenePath} does not exist!\nPlease go to the Select Scene Window and set a valid entrance.");
-                return;
-            }
 
-            _sceneCache.EditingScenesPathsCache.Clear();
-            for (int i = 0; i < SceneManager.sceneCount; i++)
-            {
-                Scene scene = SceneManager.GetSceneAt(i);
-                _sceneCache.EditingScenesPathsCache.Add(scene.path);
+                if (_sceneCache == null) _sceneCache = SceneCache.GetSceneCache();
+    
+                // Get entranceScenePath from the scene cache
+                string entranceScenePath = _sceneCache.EntranceScenePath;
+    
+                if (string.IsNullOrEmpty(entranceScenePath) || !System.IO.File.Exists(entranceScenePath))
+                {
+                    CommonUtil.SleepySceneDebugError($"Your entrance scene {entranceScenePath} does not exist!\nPlease go to the Select Scene Window and set a valid entrance.");
+                    return;
+                }
+    
+                _sceneCache.EditingScenesPathsCache.Clear();
+                for (int i = 0; i < SceneManager.sceneCount; i++)
+                {
+                    Scene scene = SceneManager.GetSceneAt(i);
+                    _sceneCache.EditingScenesPathsCache.Add(scene.path);
+                }
+    
+                try
+                {
+                    EditorSceneManager.OpenScene(entranceScenePath);
+                }
+                catch (Exception e)
+                {
+                    CommonUtil.SleepySceneDebugError("Open scene faild! " + e);
+                    return;
+                }
+    
+                EditorApplication.isPlaying = true;
             }
-
-            try
-            {
-                EditorSceneManager.OpenScene(entranceScenePath);
-            }
-            catch (Exception e)
-            {
-                CommonUtil.SleepySceneDebugError("Open scene faild! " + e);
-                return;
-            }
-
-            EditorApplication.isPlaying = true;
         }
 
         [MenuItem("Sleepy/SceneTool/\u23F9 Stop And Resume Editing Scene(s)")]
