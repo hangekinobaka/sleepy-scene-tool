@@ -391,7 +391,8 @@ namespace Sleepy.SceneTool
                         // Buttons for opening the scene
                         if (GUILayout.Button("O", GUILayout.Width(22), GUILayout.Height(20)))
                         {
-                            EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+                            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                                EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                         }
                         if (GUILayout.Button("+", GUILayout.Width(22), GUILayout.Height(20)))
                         {
@@ -403,7 +404,36 @@ namespace Sleepy.SceneTool
                         // 2. thi is not the last scene editing
                         if (GUILayout.Button("-", GUILayout.Width(22), GUILayout.Height(20)))
                         {
-                            EditorSceneManager.CloseScene(EditorSceneManager.GetSceneByPath(scenePath), true);
+                            var scene = EditorSceneManager.GetSceneByPath(scenePath);
+                            // check if dirty
+                            if (scene.isDirty)
+                            {
+                                int option = EditorUtility.DisplayDialogComplex(
+                                    "Scene Has Been Modified",
+                                    "Do you want to save the changes you made in the scene: " + scene.name,
+                                    "Save", // Option 0
+                                    "Don't Save",  // Option 1
+                                    "Cancel" // Option 2
+                                );
+
+                                switch (option)
+                                {
+                                    case 0: // Save
+                                        EditorSceneManager.SaveScene(scene);
+                                        EditorSceneManager.CloseScene(scene, true);
+                                        break;
+                                    case 1: // Don't Save
+                                        EditorSceneManager.CloseScene(scene, true);
+                                        break;
+                                    case 2: // Cancel
+                                            // Do nothing, cancel the operation
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                EditorSceneManager.CloseScene(scene, true);
+                            }
                         }
                         GUI.enabled = true;
 
